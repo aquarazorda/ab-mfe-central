@@ -1,16 +1,15 @@
 module Main where
 
 import Prelude
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Aff (launchAff_)
-import Effect.Class.Console (logShow)
-import Main.Requests (get)
+import Halogen.Aff as HA
+import Halogen.VDom.Driver (runUI)
+import Main.Components.Base as Base
 
 main :: Effect Unit
 main =
-  launchAff_ do
-    projects <- get "/groups/88" Nothing
-    case projects of
-      Just arr -> logShow arr
-      Nothing -> logShow "Projects not found!"
+  HA.runHalogenAff do
+    body <- HA.awaitBody
+    runUI Base.component unit body
+
+-- projects <- get "/groups/88" Nothing

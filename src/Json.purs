@@ -14,13 +14,7 @@ data Response
 newtype Request
   = Request Req
 
-instance showResponse :: Show Response where
-  show (Project n) = show n
-  show (Group n) = show n
-
 derive instance genericRequest :: Generic Request _
-
-derive instance genericResponse :: Generic Response _
 
 instance encodeJsonReq :: EncodeJson Request where
   encodeJson = genericEncodeJson

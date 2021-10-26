@@ -1,0 +1,31 @@
+{
+  "name": "ab-mfe-central",
+  "version": "1.0.0",
+  "description": "",
+  "source": "dist/index.html",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "spago build",
+    "bundle": "spago bundle-app --watch --to ./public/main.js",
+    "parcel": "parcel ./public/index.html --no-hmr --public-url /",
+    "serve": "npm run parcel & npm run bundle & open http://localhost:1234"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aquarazorda/ab-mfe-central.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aquarazorda/ab-mfe-central/issues"
+  },
+  "homepage": "https://github.com/aquarazorda/ab-mfe-central#readme",
+  "dependencies": {
+    "xhr2": "^0.2.1"
+  },
+  "devDependencies": {
+    "purty": "^7.0.0"
+  }
+}
