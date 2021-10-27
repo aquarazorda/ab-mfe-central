@@ -11,12 +11,14 @@
   , "effect"
   , "either"
   , "halogen"
+  , "halogen-hooks"
   , "http-methods"
   , "maybe"
   , "node-process"
   , "prelude"
   , "psci-support"
   , "strings"
+  , "tuples"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

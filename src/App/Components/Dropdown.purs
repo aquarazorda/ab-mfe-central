@@ -4,20 +4,20 @@ import Prelude
 import App.Internal.CSS (css, toggleVisibility, whenElem')
 import Data.Array (head)
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
+import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.Hooks (HookM)
+import Halogen.Hooks as Hooks
 import Type.Proxy (Proxy(..))
 
 _dropdown = Proxy :: Proxy "dropdown"
 
 data Handler
   = HandleDropdown Output
-
-data Action
-  = Toggle
-  | Choose Option
 
 type Option
   = { title :: String
@@ -39,63 +39,40 @@ type Input
 data Output
   = Changed Int
 
-dropdown :: forall query m. MonadAff m => H.Component query Input Output m
-dropdown =
-  H.mkComponent
-    { initialState
-    , render
-    , eval:
-        H.mkEval
-          $ H.defaultEval
-              { handleAction = handleAction
-              --   , initialize = Just Initialize
-              }
-    }
-  where
-  initialState :: Input -> State
-  initialState options =
-    { active: head options
-    , options: options
-    , opened: false
-    }
-
-  render :: State -> H.ComponentHTML Action () m
-  render state =
-    HH.div
-      [ css "_s_flex-a-start-i _s_input _s_input-sm _s_ml-3 _s_overflow-visible _s_p-none _s_position-relative _s_size-w-min-px--53 _s_valid"
-      , HE.onClick \_ -> Toggle
-      ]
-      [ HH.h3 [ css "_s_label _s_label-sm _s_size-h-percent--25 _s_m-none _s_size-w-percent--25 _s_pt-2 _s_pl-2 _s_label-400 _s_size-w-min-percent--25 _s_aitem-pt-none" ]
-          [ HH.span_ [ whenElem' state.active (\s -> s.title) ]
-          ]
-      , HH.h5
-          [ css "_s_position-absolute   _s_position-l-percent--0 _s_position-t-percent--25 _s_m-none _s_z-2 _s_color-bg-primary-4 _s_size-w-percent--25 _s_b-radisu-sm _s_oveflow-hidden"
-          , toggleVisibility state.opened
-          ]
-          [ HH.h4 [ css "_s_size-h-max-px--70 _s_m-none _s_overflow-x-auto _s_overflow-hidden _s_pt-2" ]
-              $ ( \e ->
-                    HH.span
-                      [ css "_s_pl-2 _s_pr-2 _s_mb-2 _s_label _s_label-sm _s_color-primary-8 _s_cursor-pointer _s_h-color _s_hitem-color-primary-1 _s_transition-0--2 _s_label-400 active"
-                      , HE.onClick \_ -> Choose e
-                      ]
-                      [ HH.text e.title ]
-                )
-              <$> state.options
-          , HH.h6 [ css "_s_size-w-percent--25 _s_m-none _s_position-relative" ]
-              [ HH.span [ css "_s_position-absolute _s_position-r-px--0 _s_position-t-px--0 _s_pt-3 _s_pointer-event-none" ]
-                  [ HH.span [ css "_s_icon _s_icon-xs _s_adj-arrow-down _s_color-primary-8" ] []
-                  ]
+component :: forall m q. MonadAff m => H.Component q Input Output m
+component =
+  Hooks.component \_ ops -> Hooks.do
+    opened /\ openedState <- Hooks.useState false
+    options /\ _ <- Hooks.useState ops
+    active /\ activeState <- Hooks.useState $ head options
+    let
+      generateOptions :: forall t1 t2. Array (HTML t1 (HookM t2 Unit))
+      generateOptions =
+        ( \e ->
+            HH.span
+              [ css "_s_pl-2 _s_pr-2 _s_mb-2 _s_label _s_label-sm _s_color-primary-8 _s_cursor-pointer _s_h-color _s_hitem-color-primary-1 _s_transition-0--2 _s_label-400 active"
+              , HE.onClick \_ -> Hooks.modify_ activeState (\_ -> Just e)
               ]
-          ]
-      ]
-
-handleAction :: forall m. MonadAff m => Action -> H.HalogenM State Action () Output m Unit
-handleAction = case _ of
-  --   Initialize -> do
-  --     H.
-  Toggle -> do
-    { opened } <- H.get
-    H.modify_ _ { opened = not opened }
-  Choose op -> do
-    H.modify_ _ { active = Just op }
-    H.raise $ Changed op.value
+              [ HH.text "e.title" ]
+        )
+          <$> options
+    Hooks.pure do
+      HH.div
+        [ css "_s_flex-a-start-i _s_input _s_input-sm _s_ml-3 _s_overflow-visible _s_p-none _s_position-relative _s_size-w-min-px--53 _s_valid"
+        , HE.onClick \_ -> Hooks.modify_ openedState not
+        ]
+        [ HH.h3 [ css "_s_label _s_label-sm _s_size-h-percent--25 _s_m-none _s_size-w-percent--25 _s_pt-2 _s_pl-2 _s_label-400 _s_size-w-min-percent--25 _s_aitem-pt-none" ]
+            [ HH.span_ [ whenElem' active (\s -> s.title) ]
+            ]
+        , HH.h5
+            [ css "_s_position-absolute   _s_position-l-percent--0 _s_position-t-percent--25 _s_m-none _s_z-2 _s_color-bg-primary-4 _s_size-w-percent--25 _s_b-radisu-sm _s_oveflow-hidden"
+            , toggleVisibility opened
+            ]
+            [ HH.h4 [ css "_s_size-h-max-px--70 _s_m-none _s_overflow-x-auto _s_overflow-hidden _s_pt-2" ] generateOptions
+            , HH.h6 [ css "_s_size-w-percent--25 _s_m-none _s_position-relative" ]
+                [ HH.span [ css "_s_position-absolute _s_position-r-px--0 _s_position-t-px--0 _s_pt-3 _s_pointer-event-none" ]
+                    [ HH.span [ css "_s_icon _s_icon-xs _s_adj-arrow-down _s_color-primary-8" ] []
+                    ]
+                ]
+            ]
+        ]
