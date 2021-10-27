@@ -1,18 +1,32 @@
 module App.Internal.Json where
 
 import Prelude
-import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:))
+import Data.Argonaut.Core (Json)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
-import App.Requests.Types (GroupItem, Req, ProjectItem)
+
+type Req
+  = { id :: Int
+    }
+
+type ProjectItem
+  = { id :: Int
+    , name :: String
+    , path :: String
+    }
+
+type ProjectsData
+  = Array ProjectItem
 
 data Response
-  = Project ProjectItem
-  | Group GroupItem
+  = Projects ProjectsData
 
 newtype Request
   = Request Req
+
+foreign import encodeJson :: String -> Json
 
 derive instance genericRequest :: Generic Request _
 
@@ -22,5 +36,4 @@ instance encodeJsonReq :: EncodeJson Request where
 instance decodeProject :: DecodeJson Response where
   decodeJson json = do
     obj <- decodeJson json
-    projects <- obj .: "projects"
-    pure $ Group projects
+    pure $ Projects obj
