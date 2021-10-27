@@ -9,8 +9,7 @@
   "scripts": {
     "build": "spago build",
     "bundle": "spago bundle-app --watch --to ./public/main.js",
-    "parcel": "parcel ./public/index.html --no-hmr --public-url /",
-    "serve": "npm run parcel & npm run bundle & open http://localhost:1234"
+    "serve": "parcel ./public/index.html --no-hmr --public-url / & open http://localhost:1234"
   },
   "repository": {
     "type": "git",
@@ -22,9 +21,6 @@
     "url": "https://github.com/aquarazorda/ab-mfe-central/issues"
   },
   "homepage": "https://github.com/aquarazorda/ab-mfe-central#readme",
-  "dependencies": {
-    "xhr2": "^0.2.1"
-  },
   "devDependencies": {
     "purty": "^7.0.0"
   }

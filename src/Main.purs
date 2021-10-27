@@ -11,5 +11,3 @@ main =
   HA.runHalogenAff do
     body <- HA.awaitBody
     runUI App.component unit body
-
--- projects <- get "/groups/88" Nothing

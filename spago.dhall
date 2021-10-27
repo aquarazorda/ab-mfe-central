@@ -1,7 +1,6 @@
 { name = "my-project"
 , dependencies =
   [ "aff"
-  , "affjax"
   , "argonaut-codecs"
   , "argonaut-core"
   , "argonaut-generic"
@@ -12,8 +11,9 @@
   , "either"
   , "halogen"
   , "halogen-hooks"
-  , "http-methods"
+  , "halogen-hooks-extra"
   , "maybe"
+  , "milkis"
   , "node-process"
   , "prelude"
   , "psci-support"
