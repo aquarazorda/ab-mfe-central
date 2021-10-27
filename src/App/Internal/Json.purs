@@ -1,11 +1,11 @@
-module Main.Json where
+module App.Internal.Json where
 
 import Prelude
 import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:))
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
-import Main.Requests.Types (GroupItem, Req, ProjectItem)
+import App.Requests.Types (GroupItem, Req, ProjectItem)
 
 data Response
   = Project ProjectItem

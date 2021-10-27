@@ -1,4 +1,4 @@
-module Main.Requests where
+module App.Requests where
 
 import Prelude
 import Affjax (Error)
@@ -14,8 +14,8 @@ import Data.Maybe (Maybe(..))
 import Dotenv (loadFile) as Dotenv
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Main.Json (Request, Response)
-import Main.Requests.Types (GeneralResponse)
+import App.Internal.Json (Request, Response)
+import App.Requests.Types (GeneralResponse)
 import Node.Process (lookupEnv)
 
 getEnv :: String -> Aff String

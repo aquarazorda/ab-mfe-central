@@ -1,4 +1,4 @@
-module Main.Requests.Types where
+module App.Requests.Types where
 
 import Affjax.ResponseHeader (ResponseHeader)
 import Affjax.StatusCode (StatusCode)
