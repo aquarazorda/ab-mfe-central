@@ -16,7 +16,11 @@ Install spago packages
 ```
 spago install
 ```
-Run express server
+Run spago bundler watch job
+```
+npm run bundle
+```
+Run parcel server in second terminal tab
 ```
 npm run serve
 ```

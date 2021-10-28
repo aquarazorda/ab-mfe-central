@@ -29,7 +29,7 @@ type Options
 type State
   = { opened :: Boolean
     , active :: Maybe Option
-    , options :: Options
+    , options :: Maybe Options
     }
 
 type Input
@@ -38,8 +38,15 @@ type Input
 data Output
   = Changed Int
 
-ops :: Response -> Maybe Options
-ops (Projects xs) = Just $ (\{ id, name } -> { title: name, value: id }) <$> xs
+class EncodedOptions a where
+  ops :: a -> Maybe Options
+
+instance decodeResponse :: EncodedOptions Response where
+  ops (Projects xs) = Just $ (\{ id, name } -> { title: name, value: id }) <$> xs
+
+instance decodeMaybeResponse :: EncodedOptions (Maybe Response) where
+  ops (Just res) = ops res
+  ops _ = Nothing
 
 component :: forall m q. MonadAff m => H.Component q Input Output m
 component =

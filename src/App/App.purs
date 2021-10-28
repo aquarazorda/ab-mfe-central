@@ -3,8 +3,9 @@ module App where
 import Prelude
 import App.Components.Dropdown as Dropdown
 import App.Internal.CSS (css)
+import App.Internal.Json (Response(..))
 import App.Requests as REQ
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Halogen as H
@@ -22,8 +23,8 @@ component =
   Hooks.component \_ _ -> Hooks.do
     projects /\ setProjects <- useStateFn Hooks.put Nothing
     Hooks.useLifecycleEffect do
-      prs <- liftAff $ REQ.get "/projects" Nothing
-      setProjects $ maybe (Just []) Dropdown.ops prs
+      prs <- liftAff $ REQ.get "/projects" Projects Nothing
+      setProjects $ Dropdown.ops prs
       pure Nothing
     Hooks.pure do
       HH.div_
