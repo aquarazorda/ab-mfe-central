@@ -1,21 +1,19 @@
 module App.Internal.Json where
 
+import App.Data.Types (GroupData, ProjectData)
 import Foreign (Foreign)
 
 type Req
   = { id :: Int
     }
 
-type ProjectItem
-  = { id :: Int
-    , name :: String
-    , path :: String
-    }
-
 data Response
-  = Projects (Array ProjectItem)
+  = Projects (Array ProjectData)
+  | Group GroupData
 
 newtype Request
   = Request Req
 
 foreign import decodeJson :: forall a. (a -> Response) -> Foreign -> Response
+
+foreign import getWithKey :: String -> Foreign -> Foreign
