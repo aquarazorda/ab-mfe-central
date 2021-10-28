@@ -1,1 +1,1 @@
-exports.encodeJson = JSON.parse
+exports.decodeJson = constructor => constructor

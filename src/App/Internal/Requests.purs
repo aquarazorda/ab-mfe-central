@@ -1,15 +1,13 @@
 module App.Requests where
 
 import Prelude
-import App.Internal.Json (Request, Response, encodeJson)
-import Data.Argonaut.Core (Json)
-import Data.Argonaut.Decode (decodeJson)
-import Data.Either (Either(..), hush)
+import App.Internal.Json (Request, Response, decodeJson)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Dotenv (loadFile) as Dotenv
 import Effect.Aff (Aff, attempt)
 import Effect.Class (liftEffect)
-import Milkis (Fetch, Method, URL(..), fetch, getMethod, makeHeaders, postMethod, text)
+import Milkis (Fetch, Method, URL(..), fetch, getMethod, json, makeHeaders, postMethod)
 import Milkis.Impl.Window (windowFetch)
 import Node.Process (lookupEnv)
 
@@ -24,11 +22,8 @@ getEnv s = do
     Just b -> pure b
     Nothing -> pure ""
 
-decodeResponse :: Json -> Maybe Response
-decodeResponse json = hush $ decodeJson json
-
-makeRequest :: Method -> String -> Maybe Request -> Aff (Maybe Response)
-makeRequest method path _ = do
+makeRequest :: forall a. Method -> String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
+makeRequest method path constructor _ = do
   _res <-
     attempt
       $ _fetch (URL $ "http://git.adjaradev.com/api/v4" <> path)
@@ -38,11 +33,11 @@ makeRequest method path _ = do
   case _res of
     Left _ -> pure Nothing
     Right res -> do
-      body <- text res
-      pure $ decodeResponse $ encodeJson body
+      j <- json res
+      pure $ Just $ decodeJson constructor j
 
-get :: String -> Maybe Request -> Aff (Maybe Response)
+get :: forall a. String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
 get = makeRequest getMethod
 
-post :: String -> Maybe Request -> Aff (Maybe Response)
+post :: forall a. String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
 post = makeRequest postMethod
