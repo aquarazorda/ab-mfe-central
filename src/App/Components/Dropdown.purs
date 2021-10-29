@@ -2,8 +2,10 @@ module App.Components.Dropdown where
 
 import Prelude
 import App.Internal.CSS (css, toggleVisibility, whenElem)
-import App.Internal.Json (Response(..))
-import Data.Array (head)
+import App.Internal.Requests (Response(..))
+import Data.Array (head, filter, mapWithIndex)
+import Data.String (contains, replace, Replacement(..))
+import Data.String.Pattern (Pattern(..))
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
@@ -46,6 +48,16 @@ class EncodedOptions a where
 instance decodeResponse :: EncodedOptions Response where
   genOps (Projects xs) = Just $ (\{ id, name } -> { title: name, value: id }) <$> xs
   genOps (Group gr) = genOps $ Projects gr.projects
+  genOps (Branches bs) =
+    Just
+      $ bs
+      # filter (\{ name } -> contains (Pattern "version") name)
+      # mapWithIndex
+          ( \i { name } ->
+              { title: replace (Pattern "version") (Replacement "") name
+              , value: i
+              }
+          )
 
 instance decodeMaybeResponse :: EncodedOptions (Maybe Response) where
   genOps (Just res) = genOps res

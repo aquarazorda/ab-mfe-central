@@ -3,12 +3,10 @@ module App where
 import Prelude
 import App.Components.Dropdown as Dropdown
 import App.Internal.CSS (css)
-import App.Internal.Json (Response(..))
-import App.Requests as REQ
-import Data.Maybe (Maybe(..), fromMaybe)
+import App.Internal.Requests (get, Response(..))
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff, liftAff)
-import Effect.Class.Console (logShow)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.Hooks as Hooks
@@ -23,14 +21,19 @@ component :: forall i m q o. MonadAff m => H.Component q i o m
 component =
   Hooks.component \_ _ -> Hooks.do
     projects /\ setProjects <- useStateFn Hooks.put Nothing
-    activeProject /\ setActiveProject <- useStateFn Hooks.put Nothing
+    activeProject /\ setActiveProject <- useStateFn Hooks.put $ Just 0
+    versions /\ setVersions <- useStateFn Hooks.put Nothing
     let
       handleDropdown (Dropdown.Changed v) = do
-        when ((fromMaybe 0 activeProject) /= v) do
-          setActiveProject $ Just v
-          logShow v
+        case activeProject of
+          Just ap -> do
+            when (ap /= v) do
+              vs <- liftAff $ get ("/projects/" <> show v <> "/repository/branches") Branches Nothing
+              setActiveProject $ Just v
+              setVersions $ Just vs
+          Nothing -> pure unit
     Hooks.useLifecycleEffect do
-      prs <- liftAff $ REQ.get "/groups/88" Group Nothing
+      prs <- liftAff $ get "/groups/88" Group Nothing
       setProjects prs
       pure Nothing
     Hooks.pure do
@@ -48,7 +51,9 @@ component =
         , HH.div [ css "_s_bd-primary-5 _s_bd-solid _s_bw-1 _s_container _s_flex _s_p-6 _s_size-w-percent--25" ]
             [ HH.span [ css "_s_label _s_label-md _s_label-font-setting-case-on" ]
                 [ HH.text "Choose Version"
-                , HH.slot_ _versionDD unit Dropdown.component $ Just [ { title: "1.0", value: 1 } ]
+                , case versions of
+                    Just vs -> HH.slot_ _versionDD unit Dropdown.component (Dropdown.genOps vs)
+                    Nothing -> HH.span [ css "_s_label _s_label-md _s_ml-3" ] [ HH.text "No versions found!" ]
                 ]
             ]
         , HH.div [ css "_s_color-primary-1 _s_label _s_label-md _s_btn _s_color-bg-primary-3 _s_b-radius-none" ] [ HH.text "Deploy" ]
