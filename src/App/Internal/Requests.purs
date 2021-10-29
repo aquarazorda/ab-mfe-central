@@ -1,12 +1,27 @@
-module App.Requests where
+module App.Internal.Requests where
 
 import Prelude
-import App.Internal.Json (Request, Response, decodeJson)
+import App.Data.Types (ProjectData, GroupData)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff, attempt)
 import Milkis (Fetch, Method, URL(..), fetch, getMethod, json, makeHeaders, postMethod)
 import Milkis.Impl.Window (windowFetch)
+import Foreign (Foreign)
+
+type Req
+  = { id :: Int
+    }
+
+newtype Request
+  = Request Req
+
+data Response
+  = Projects (Array ProjectData)
+  | Group GroupData
+  | Branches (Array ProjectData)
+
+foreign import decodeResponse :: forall a. (a -> Response) -> Foreign -> Response
 
 _fetch :: Fetch
 _fetch = fetch windowFetch
@@ -23,7 +38,7 @@ makeRequest method path constructor _ = do
     Left _ -> pure Nothing
     Right res -> do
       j <- json res
-      pure $ Just $ decodeJson constructor j
+      pure $ Just $ decodeResponse constructor j
 
 get :: forall a. String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
 get = makeRequest getMethod

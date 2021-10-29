@@ -1,0 +1,1 @@
+exports.decodeResponse = constructor => constructor
