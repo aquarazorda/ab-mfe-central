@@ -5,9 +5,10 @@ import App.Components.Dropdown as Dropdown
 import App.Internal.CSS (css)
 import App.Internal.Json (Response(..))
 import App.Requests as REQ
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff, liftAff)
+import Effect.Class.Console (logShow)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.Hooks as Hooks
@@ -22,6 +23,12 @@ component :: forall i m q o. MonadAff m => H.Component q i o m
 component =
   Hooks.component \_ _ -> Hooks.do
     projects /\ setProjects <- useStateFn Hooks.put Nothing
+    activeProject /\ setActiveProject <- useStateFn Hooks.put Nothing
+    let
+      handleDropdown (Dropdown.Changed v) = do
+        when ((fromMaybe 0 activeProject) /= v) do
+          setActiveProject $ Just v
+          logShow v
     Hooks.useLifecycleEffect do
       prs <- liftAff $ REQ.get "/groups/88" Group Nothing
       setProjects prs
@@ -34,7 +41,7 @@ component =
             [ HH.span [ css "_s_label _s_label-md _s_label-font-setting-case-on" ]
                 [ HH.text "Choose Project To Deploy"
                 , case projects of
-                    Just ops -> HH.slot_ _projectDD unit Dropdown.component $ Dropdown.ops ops
+                    Just ops -> HH.slot _projectDD unit Dropdown.component (Dropdown.genOps ops) handleDropdown
                     Nothing -> HH.span [ css "_s_label _s_label-md _s_ml-3" ] [ HH.text "No projects found!" ]
                 ]
             ]
