@@ -1,4 +1,4 @@
-# Micro-Frotend Deployment Methodology
+## Micro-Frotend Deployment Methodology
 
 First of all we should define simple rules.
 
