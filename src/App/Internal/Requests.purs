@@ -5,9 +5,10 @@ import App.Data.Types (ProjectData, GroupData)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff, attempt)
+import Foreign (Foreign)
 import Milkis (Fetch, Method, URL(..), fetch, getMethod, json, makeHeaders, postMethod)
 import Milkis.Impl.Window (windowFetch)
-import Foreign (Foreign)
+import Unsafe.Coerce (unsafeCoerce)
 
 type Req
   = { id :: Int
@@ -23,8 +24,13 @@ data Response
 
 foreign import decodeResponse :: forall a. (a -> Response) -> Foreign -> Response
 
+foreign import encodeBody :: forall a. Record a -> String
+
 _fetch :: Fetch
 _fetch = fetch windowFetch
+
+patchMethod :: Method
+patchMethod = unsafeCoerce "PATCH"
 
 makeRequest :: forall a. Method -> String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
 makeRequest method path constructor _ = do
@@ -45,3 +51,14 @@ get = makeRequest getMethod
 
 post :: forall a. String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
 post = makeRequest postMethod
+
+deploy :: String -> String -> Aff (Maybe Response)
+deploy name version = do
+  _ <-
+    attempt
+      $ _fetch (URL "http://localhost:4202/depMicrofe")
+          { method: patchMethod
+          , body: encodeBody { version: version, name: name }
+          , headers: makeHeaders { "Content-Type": "application/json" }
+          }
+  pure Nothing

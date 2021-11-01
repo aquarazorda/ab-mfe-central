@@ -29,7 +29,7 @@ data Action
     (Maybe Option)
 
 data Output
-  = Changed Int
+  = Changed Option
 
 type Option
   = { title :: String
@@ -71,9 +71,9 @@ handleAction :: forall m. Action -> Hooks.HookM m Unit
 handleAction = case _ of
   Choosen s ot i -> do
     Hooks.modify_ s \_ -> i
-    case { a: ot, b: i } of
-      { a: Just _ot, b: Just _i } -> Hooks.raise _ot $ Changed _i.value
-      _ -> pure unit
+    case ot, i of
+      Just _ot, Just _i -> Hooks.raise _ot $ Changed _i
+      _, _ -> pure unit
 
 component :: forall m q. MonadAff m => H.Component q Input Output m
 component =
