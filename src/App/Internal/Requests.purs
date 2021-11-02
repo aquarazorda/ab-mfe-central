@@ -56,7 +56,7 @@ deploy :: String -> String -> Aff (Maybe Response)
 deploy name version = do
   _ <-
     attempt
-      $ _fetch (URL "http://localhost:4202/depMicrofe")
+      $ _fetch (URL "https://deploy.adjarabet.com:8081/depMicrofe")
           { method: patchMethod
           , body: encodeBody { version: version, name: name }
           , headers: makeHeaders { "Content-Type": "application/json" }
