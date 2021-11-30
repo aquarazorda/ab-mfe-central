@@ -1,19 +1,17 @@
 module App.Internal.Validation where
 
 import Prelude
+import App.Data.Types (Email(..))
 import Data.Either (Either(..))
-import Data.String.Pattern (Pattern(..))
 import Data.Maybe (Maybe, maybe)
 import Data.String (contains, length)
+import Data.String.Pattern (Pattern(..))
 import Formless (Validation, hoistFnE_)
 
 data FieldError
   = EmptyField
   | TooShort Int
   | InvalidEmail
-
-newtype Email
-  = Email String
 
 emailFormat :: forall form m. Monad m => Validation form m FieldError String Email
 emailFormat =

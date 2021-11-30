@@ -3,6 +3,7 @@
   [ "aff"
   , "arrays"
   , "console"
+  , "const"
   , "dom-indexed"
   , "effect"
   , "either"
