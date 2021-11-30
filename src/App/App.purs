@@ -35,8 +35,10 @@ component =
         L.LoginFail -> setPopup { active: true, action: (setPopup emptyPopup), message: "Incorrect login data." }
 
       deployHandler :: D.Output Aff -> Hooks.HookM Aff Unit
-      deployHandler (D.OpenPopup action) = do
-        setPopup { active: true, action: action, message: "Are you sure, you want to deploy?" }
+      deployHandler = case _ of
+        D.OpenPopup action -> do
+          setPopup { active: true, action: action, message: "Are you sure, you want to deploy?" }
+        D.Logout -> setState Auth
     Hooks.pure do
       HH.div_
         [ P.element popup setPopup

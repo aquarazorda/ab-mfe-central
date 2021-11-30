@@ -20,6 +20,7 @@
   , "strings"
   , "tuples"
   , "unsafe-coerce"
+  , "web-events"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
