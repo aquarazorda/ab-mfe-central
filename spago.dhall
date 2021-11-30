@@ -7,6 +7,7 @@
   , "dom-indexed"
   , "effect"
   , "either"
+  , "exceptions"
   , "foreign"
   , "halogen"
   , "halogen-formless"

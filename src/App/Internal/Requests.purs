@@ -6,9 +6,10 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff, attempt)
 import Foreign (Foreign)
-import Milkis (Fetch, Method, URL(..), fetch, getMethod, json, makeHeaders, postMethod, statusCode)
+import Milkis (Fetch, Method, URL(..), fetch, getMethod, json, makeHeaders, postMethod, statusCode, Response)
 import Milkis.Impl.Window (windowFetch)
 import Unsafe.Coerce (unsafeCoerce)
+import Effect.Exception (Error)
 
 type Req
   = { id :: Int
@@ -17,12 +18,12 @@ type Req
 newtype Request
   = Request Req
 
-data Response
+data Res
   = Projects (Array ProjectData)
   | Group GroupData
   | Branches (Array ProjectData)
 
-foreign import decodeResponse :: forall a. (a -> Response) -> Foreign -> Response
+foreign import decodeResponse :: forall a. (a -> Res) -> Foreign -> Res
 
 foreign import encodeBody :: forall a. Record a -> String
 
@@ -32,8 +33,8 @@ _fetch = fetch windowFetch
 patchMethod :: Method
 patchMethod = unsafeCoerce "PATCH"
 
-makeRequest :: forall a. Method -> String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
-makeRequest method path constructor _ = do
+gitlabReq :: forall a. Method -> String -> (a -> Res) -> Maybe Request -> Aff (Maybe Res)
+gitlabReq method path constructor _ = do
   _res <-
     attempt
       $ _fetch (URL $ "http://git.adjaradev.com/api/v4" <> path)
@@ -46,40 +47,29 @@ makeRequest method path constructor _ = do
       j <- json res
       pure $ Just $ decodeResponse constructor j
 
-get :: forall a. String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
-get = makeRequest getMethod
+get :: forall a. String -> (a -> Res) -> Maybe Request -> Aff (Maybe Res)
+get = gitlabReq getMethod
 
-post :: forall a. String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
-post = makeRequest postMethod
+post :: forall a. String -> (a -> Res) -> Maybe Request -> Aff (Maybe Res)
+post = gitlabReq postMethod
+
+req :: forall b. Method -> String -> Record b -> Aff (Either Error Response)
+req method path body =
+  attempt
+    $ _fetch (URL $ "https://deploy.adjarabt.com:8081/" <> path)
+        { method: method
+        , body: encodeBody body
+        , headers: makeHeaders { "Content-Type": "application/json" }
+        }
+
+deploy :: String -> String -> Aff (Maybe Res)
+deploy name version = do
+  _ <- req patchMethod "depMicrofe" { version: version, name: name }
+  pure Nothing
 
 login :: Login -> Aff Boolean
-login { email, password } = do
-  _response <-
-    attempt
-      $ _fetch (URL "https://deploy.adjarabet.com:8081/auth")
-          { method: postMethod
-          , headers: makeHeaders { "Content-Type": "application/json" }
-          , body:
-              encodeBody
-                { username: email
-                , password: password
-                }
-          }
+login ld = do
+  _response <- req postMethod "auth" ld
   case _response of
     Left _ -> pure false
-    Right res ->
-      if statusCode res == 200 then
-        pure true
-      else
-        pure false
-
-deploy :: String -> String -> Aff (Maybe Response)
-deploy name version = do
-  _ <-
-    attempt
-      $ _fetch (URL "https://deploy.adjarabet.com:8081/depMicrofe")
-          { method: patchMethod
-          , body: encodeBody { version: version, name: name }
-          , headers: makeHeaders { "Content-Type": "application/json" }
-          }
-  pure Nothing
+    Right res -> if statusCode res == 200 then pure true else pure false

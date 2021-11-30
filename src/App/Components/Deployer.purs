@@ -3,7 +3,7 @@ module App.Components.Deployer where
 import Prelude
 import App.Components.Dropdown as Dropdown
 import App.Internal.CSS (css)
-import App.Internal.Requests (Response(..), deploy, get)
+import App.Internal.Requests (Res(..), deploy, get)
 import Data.Maybe (Maybe(..))
 import Data.String (toLower)
 import Data.Tuple.Nested ((/\))

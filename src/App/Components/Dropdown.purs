@@ -2,7 +2,7 @@ module App.Components.Dropdown where
 
 import Prelude
 import App.Internal.CSS (css, toggleVisibility, whenElem)
-import App.Internal.Requests (Response(..))
+import App.Internal.Requests (Res(..))
 import Data.Array (head, filter, mapWithIndex)
 import Data.String (contains, replace, Replacement(..))
 import Data.String.Pattern (Pattern(..))
@@ -45,7 +45,7 @@ type Input
 class EncodedOptions a where
   genOps :: a -> Maybe Options
 
-instance decodeResponse :: EncodedOptions Response where
+instance decodeResponse :: EncodedOptions Res where
   genOps (Projects xs) = Just $ (\{ id, name } -> { title: name, value: id }) <$> xs
   genOps (Group gr) = genOps $ Projects gr.projects
   genOps (Branches bs) =
@@ -59,7 +59,7 @@ instance decodeResponse :: EncodedOptions Response where
               }
           )
 
-instance decodeMaybeResponse :: EncodedOptions (Maybe Response) where
+instance decodeMaybeResponse :: EncodedOptions (Maybe Res) where
   genOps (Just res) = genOps res
   genOps _ = Nothing
 
