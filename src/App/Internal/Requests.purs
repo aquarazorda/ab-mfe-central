@@ -1,12 +1,12 @@
 module App.Internal.Requests where
 
 import Prelude
-import App.Data.Types (ProjectData, GroupData)
+import App.Data.Types (ProjectData, GroupData, Login)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff, attempt)
 import Foreign (Foreign)
-import Milkis (Fetch, Method, URL(..), fetch, getMethod, json, makeHeaders, postMethod)
+import Milkis (Fetch, Method, URL(..), fetch, getMethod, json, makeHeaders, postMethod, statusCode)
 import Milkis.Impl.Window (windowFetch)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -51,6 +51,27 @@ get = makeRequest getMethod
 
 post :: forall a. String -> (a -> Response) -> Maybe Request -> Aff (Maybe Response)
 post = makeRequest postMethod
+
+login :: Login -> Aff Boolean
+login { email, password } = do
+  _response <-
+    attempt
+      $ _fetch (URL "https://deploy.adjarabet.com:8081/auth")
+          { method: postMethod
+          , headers: makeHeaders { "Content-Type": "application/json" }
+          , body:
+              encodeBody
+                { username: email
+                , password: password
+                }
+          }
+  case _response of
+    Left _ -> pure false
+    Right res ->
+      if statusCode res == 200 then
+        pure true
+      else
+        pure false
 
 deploy :: String -> String -> Aff (Maybe Response)
 deploy name version = do
