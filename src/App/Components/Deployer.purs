@@ -21,6 +21,7 @@ _versionDD = Proxy :: Proxy "version_dd"
 
 data Output m
   = OpenPopup (Hooks.HookM m Unit)
+  | Logout
 
 component :: forall i m q. MonadAff m => H.Component q i (Output m) m
 component =
@@ -81,4 +82,11 @@ component =
                 pure unit
             ]
             [ HH.text "Deploy" ]
+        , HH.div
+            [ css "_s_color-primary-1 _s_label _s_label-md _s_btn _s_color-bg-primary-3 _s_b-radius-none _s_mt-2"
+            , HE.onClick \_ -> do
+                Hooks.raise outputToken Logout
+                pure unit
+            ]
+            [ HH.text "Logout" ]
         ]
